@@ -1,0 +1,53 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module pythonBAM ! in 
+    interface  ! in :pythonbam
+        module pythonbam ! in :pythonbam:pythonbam.f90
+            use sigio_BAMMod, only: bamFile
+            character,         allocatable, public, dimension(:)     :: chararray1d
+            character,         allocatable, public, dimension(:,:)   :: chararray2d
+            real,              allocatable, public, dimension(:)     :: array1d
+            real,              allocatable, public, dimension(:,:)   :: array2d
+            real,              allocatable, public, dimension(:,:,:) :: array3d
+
+
+            function open(header, binary, mode, ftype, initSpec) result (fnumber) ! in :pythonbam:pythonbam.f90:pythonbam
+                character*(*), intent(in) :: header
+                character*(*), optional, intent(in) :: binary = 'None'
+                character*(*), optional, intent(in) :: mode = 'r'
+                character*(*), optional, intent(in) :: ftype= 'fct'
+                logical,       optional, intent(in) :: initSpec = 1
+                integer,                  :: fnumber
+            end function open
+
+            function close(fnumber) result (iret) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer intent(in) :: fnumber
+                integer            :: iret
+            end function close
+
+            function getDim(FNumber, dimName) result(npts) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer,       intent(in) :: FNumber
+                character*(*), intent(in) :: dimName
+                integer                   :: npts
+            end function getDim
+
+            function getField(FNumber, fieldName, level) result(iret) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer,       intent(in) :: FNumber
+                character*(*), intent(in) :: fieldName
+                integer,       intent(in) :: level
+                integer                   :: iret
+            end function getField
+          
+            function getNLevels(FNumber, fieldName) result(nLevels) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer,       intent(in) :: FNumber
+                character*(*), intent(in) :: fieldName
+                integer                   :: nLevels
+            end function getNLevels
+
+        end module pythonbam
+    end interface 
+end python module pythonBAM
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
