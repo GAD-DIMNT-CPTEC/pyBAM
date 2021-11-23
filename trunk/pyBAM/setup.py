@@ -48,7 +48,7 @@ if __name__ == "__main__":
           author       = "Joao Gerd Z. de Mattos",
           author_email = "joao.gerd@inpe.br",
           packages=['pyBAM'],
-          install_requires=["numpy","matplotlib",'basemap'],
+          install_requires=["numpy","matplotlib",'xarray', 'cartopy', 'tqdm'],
           platforms = ["any"],
           ext_modules = [ext],
           zip_safe = False
