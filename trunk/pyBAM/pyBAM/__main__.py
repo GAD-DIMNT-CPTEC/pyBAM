@@ -204,6 +204,17 @@ class openBAM(object):
            self.lats    = pBAM.array1d.copy()
            pBAM.array1d = None
 
+        self.nlevels = pBAM.getVerticalLevels(self.FNumber)
+        if self.nlevels > 0:
+            self.levels = pBAM.array1d.copy()
+            pBAM.array1d = None
+
+        self.nVars = pBAM.getNVars(self.FNumber)
+        varNames   = pBAM.getVarNames(self.FNumber, self.nVars)
+        self.VarNames   = []
+        for name in varNames:
+           self.VarNames.append(name.tostring().decode('UTF-8').strip())   
+
 
     def close(self):
 
@@ -224,6 +235,8 @@ class openBAM(object):
         self.nlat     = None # Number of latitudinal points
         self.lons     = None # array of londitudes
         self.lats     = None # array of latitudes
+        self.VarNames = None  # Name of variables
+
 
         return iret
 
@@ -247,16 +260,21 @@ class openBAM(object):
             print('Error to get field',fieldName,iret)
             return iret
             
-    def getField3D(self, fieldName):
+    def getField3D(self, fieldName, zlevels=None):
 
-        nlevs = pBAM.getNLevels(self.FNumber, fieldName)
-        print(fieldName,' has ',nlevs,' zlevels')
+        if zlevels is None:
+           nlevs  = pBAM.getNLevels(self.FNumber, fieldName)
+           levels = self.levels
+        else:
+           nlevs  = len(zlevels)
+           levels = self.levels[[z-1 for z in zlevels]]
+
+        print('Will get ',nlevs,'zlevels from ', fieldName)
         print('This operation will take a while ...')
-#        ds = xr.Dataset()
         da = {}
-        for zlevel in tqdm(range(1,nlevs+1)):
-            da[zlevel] = self.getField(fieldName,zlevel)
-            da[zlevel] = da[zlevel].assign_coords(zlev=zlevel)
+        for k, level in enumerate(tqdm(levels)):
+            da[k] = self.getField(fieldName,k+1)
+            da[k] = da[k].assign_coords(zlev=level)
 
         da = xr.concat([da[i] for i in da],dim='zlev')
 

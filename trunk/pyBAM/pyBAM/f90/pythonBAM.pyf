@@ -5,8 +5,8 @@ python module pythonBAM ! in
     interface  ! in :pythonbam
         module pythonbam ! in :pythonbam:pythonbam.f90
             use sigio_BAMMod, only: bamFile
-            character,         allocatable, public, dimension(:)     :: chararray1d
-            character,         allocatable, public, dimension(:,:)   :: chararray2d
+            character,      allocatable, public, dimension(:)     :: chararray1d
+            character,      allocatable, public, dimension(:,:)   :: chararray2d
             real,              allocatable, public, dimension(:)     :: array1d
             real,              allocatable, public, dimension(:,:)   :: array2d
             real,              allocatable, public, dimension(:,:,:) :: array3d
@@ -14,9 +14,9 @@ python module pythonBAM ! in
 
             function open(header, binary, mode, ftype, initSpec) result (fnumber) ! in :pythonbam:pythonbam.f90:pythonbam
                 character*(*), intent(in) :: header
-                character*(*), optional, intent(in) :: binary = 'None'
-                character*(*), optional, intent(in) :: mode = 'r'
-                character*(*), optional, intent(in) :: ftype= 'fct'
+                character*(*), optional, intent(in) :: binary   = 'None'
+                character*(*), optional, intent(in) :: mode     = 'r'
+                character*(*), optional, intent(in) :: ftype    = 'fct'
                 logical,       optional, intent(in) :: initSpec = 1
                 integer,                  :: fnumber
             end function open
@@ -44,6 +44,23 @@ python module pythonBAM ! in
                 character*(*), intent(in) :: fieldName
                 integer                   :: nLevels
             end function getNLevels
+
+            function getVerticalLevels(FNumber) result(nLevels) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer,       intent(in) :: FNumber
+                integer                   :: nLevels
+            end function getVerticalLevels
+
+            function getNVars(FNumber) result(nVars) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer intent(in   ) :: FNumber
+                integer               :: nVars
+            end subroutine getnvars
+
+
+            subroutine getVarNames(FNumber, nVars, varNames) ! in :pythonbam:pythonbam.f90:pythonbam
+                integer, intent(in) :: FNumber
+                integer, intent(in) :: nVars
+                character*45, intent(out) :: varNames(nVars)
+            end subroutine getVarNames
 
         end module pythonbam
     end interface 
