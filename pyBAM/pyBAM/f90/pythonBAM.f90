@@ -1,6 +1,7 @@
 module pythonBAM
    use iso_c_binding
    use sigio_BAMMod, only: bamFile
+   use typeKinds, only: Double
    Implicit None
    Private
 
@@ -9,6 +10,9 @@ module pythonBAM
    Public :: getDim
    Public :: getField
    Public :: getNLevels
+   Public :: getVerticalLevels
+   Public :: getNVars
+   public :: getVarNames
 
    character(len=*),parameter :: myname = 'pythonBAM'
 
@@ -266,388 +270,96 @@ module pythonBAM
    end function
 
 
+   function getVerticalLevels(FNumber)result(nLevels)
+      integer, intent(in) :: FNumber
+      integer             :: nLevels
 
-!   subroutine GetVarInfo(FNumber, VarName, nKx)
-!      integer,          intent(in   ) :: FNumber
-!      character(len=*), intent(in   ) :: VarName
-!      integer,          intent(  out) :: nKx
-!
-!      type(CObsInfo), pointer :: ObsNow => null()
-!      type(ObsType), pointer :: oType => null()
-!
-!      type(RObsInfo), pointer :: SensorNow => null()
-!      type(SatPlat), pointer :: oSat => null()
-!
-!      type(acc), pointer :: d => null()
-!
-!      character(len=10) :: v1, v2
-!
-!      integer :: i
-!
-!      !
-!      ! Release array2d if allocated
-!      !
-!
-!      if(allocated(Array2D)) deallocate(Array2D)
-!
-!      !
-!      ! Find by file opened
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!
-!
-!      select case(d%FileType)
-!         case(1)
-!
-!            !
-!            ! Get first variable
-!            !
-!      
-!            call d%conv%GetFirstVar(ObsNow)
-!      
-!            !
-!            ! Find by VarName
-!            !
-!            v1 = trim(adjustl(VarName))
-!            do while(associated(ObsNow))
-!      
-!               v2 = trim(adjustl(ObsNow%VarName))
-!      
-!               !now find by ObsType (kx)
-!               if(v1 .eq. v2) then
-!      
-!                 oType => ObsNow%OT%FirstKX
-!                 nKx = ObsNow%nKx
-!                 allocate(Array2D(ObsNow%nKx,2))
-!                 do i=1,ObsNow%nKx
-!                    Array2D(i,1) = oType%kx
-!                    Array2D(i,2) = oType%nobs
-!                    oType => oType%nextKX
-!                 enddo
-!                
-!               endif
-!      
-!               ObsNow => ObsNow%NextVar
-!            enddo
-!
-!         case(2)
-!            !
-!            ! Get first variable
-!            !
-!      
-!            call d%rad%GetFirstSensor(SensorNow)
-!      
-!            !
-!            ! Find by VarName
-!            !
-!            v1 = trim(adjustl(VarName))
-!            do while(associated(SensorNow))
-!      
-!               v2 = trim(adjustl(SensorNow%Sensor))
-!      
-!               !now find by ObsType (kx)
-!               if(v1 .eq. v2) then
-!      
-!                 oSat => SensorNow%oSat%First
-!                 nKx = SensorNow%nSatID
-!                 allocate(Array2D(nKx,2))
-!                 do i = 1,nKx
-!                    Array2D(i,1) = i
-!                    Array2D(i,2) = oSat%nobs
-!                    oSat => oSat%Next
-!                 enddo
-!                
-!               endif
-!      
-!               SensorNow => SensorNow%Next
-!            enddo
-!
-!      end select
-!
-!   end subroutine
-!
-!   function getnvars(FNumber) result(nVars)
-!      integer, intent(in   ) :: FNumber
-!      integer                :: nVars
-!
-!      type(acc), pointer :: d => null()
-!
-!
-!      !
-!      ! Find by file opened
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!
-!      !
-!      ! Get number of variables
-!      !
-!
-!      select case(d%Filetype)
-!         case(1); nVars = d%conv%nVars
-!         case(2); nVars = d%rad%nType
-!      end select
-!
-!   end function
-!
-!   subroutine getConvVarInfo(FNumber, nVars, vNames, nTypes)
-!      integer,                       intent(in   ) :: FNumber
-!      integer,                       intent(in   ) :: nVars
-!      character*4, dimension(nVars), intent(  out) :: vNames
-!      integer,     dimension(nVars), intent(  out) :: nTypes
-!
-!
-!      type(acc),      pointer :: d => null()
-!      type(CObsInfo), pointer :: CObsRoot => null()
-!      type(CObsInfo), pointer :: CtmpObs => null()
-!
-!        integer :: i
-!
-!      
-!      !
-!      ! Find by file opened
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!      
-!      !
-!      ! sanity check
-!      !
-!
-!      if (d%fileType .ne. 1)then
-!         write(*,*)'File is not conventional type'
-!         return
-!      endif
-!
-!
-!      !
-!      ! Get first variable
-!      !
-!      call d%conv%GetFirstVar(CObsRoot)
-!      CtmpObs => CObsRoot
-!      do i = 1, nVars
-!         vNames(i) = trim(CtmpObs%VarName)
-!         nTypes(i) = cTmpObs%nKx
-!         CtmpObs   => CtmpObs%NextVar
-!      enddo
-!
-!   end subroutine
-!
-!   subroutine getConvVarTypes(FNumber, vName, nTypes, vTypes)
-!      integer,                    intent(in   ) :: FNumber
-!      character*4,                intent(in   ) :: vName
-!      integer,                    intent(in   ) :: nTypes
-!      integer, dimension(nTypes), intent(  out) :: vTypes
-!
-!      integer :: i
-!      type(acc),      pointer :: d => null()
-!      type(CObsInfo), pointer :: CObsRoot => null()
-!      type(CObsInfo), pointer :: CtmpObs => null()
-!
-!      type(ObsType), pointer :: ObType => null()
-!
-!      !
-!      ! Find by file opened
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!
-!      !
-!      ! sanity check
-!      !
-!
-!      if (d%fileType .ne. 1)then
-!         write(*,*)'File is not conventional type'
-!         return
-!      endif
-!
-!      !
-!      ! Get first variable
-!      !
-!      call d%conv%getFirstVar(cTmpObs)
-!      do while(associated(cTmpObs))
-!         if (trim(vName) .eq. trim(adjustl(cTmpObs%varName)))then
-!            ObType => cTmpObs%OT%FirstKX
-!            i=1
-!            do while(associated(ObType))
-!              vTypes(i) = ObType%kx
-!              i=i+1
-!              ObType => ObType%nextKX
-!            enddo
-!
-!         endif
-!         CtmpObs     => CtmpObs%NextVar
-!      enddo
-!
-!   end subroutine
-!
-!
-!   subroutine GetVarNames(FNumber, nVars, VarNames)
-!      integer, intent(in) :: FNumber
-!      integer, intent(in) :: nVars
-!      character*4, dimension(nVars), intent(out) :: VarNames
-!
-!
-!      type(acc),      pointer :: d => null()
-!      type(CObsInfo), pointer :: CObsRoot => null()
-!      type(CObsInfo), pointer :: CtmpObs => null()
-!      type(RObsInfo), pointer :: RObsRoot => null()
-!      type(RObsInfo), pointer :: RtmpObs => null()
-!
-!      integer :: i
-!
-!      
-!      !
-!      ! Find by file opened
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!      select case (d%FileType)
-!         case(1)
-!
-!            !
-!            ! Get first variable
-!            !
-!            call d%conv%GetFirstVar(CObsRoot)
-!            CtmpObs => CObsRoot
-!            do i = 1, nVars
-!               VarNames(i) = trim(CtmpObs%VarName)
-!               CtmpObs     => CtmpObs%NextVar
-!            enddo
-!
-!         case(2)
-!
-!            !
-!            ! Get first Sensor
-!            !
-!            call d%rad%GetFirstSensor(RObsRoot)
-!            RtmpObs => RObsRoot
-!            do i = 1, nVars
-!               VarNames(i) = trim(RtmpObs%Sensor)
-!               RtmpObs     => RtmpObs%Next
-!            enddo
-!
-!      end select
-!
-!   end subroutine
-!
-!   subroutine GetObsConv  (FNumber, oName, oType, zlevs, n, NObs)
-!      integer,          intent(in   ) :: FNumber
-!      character(len=*), intent(in   ) :: oName
-!      integer,          intent(in   ) :: oType
-!      integer,          intent(in   ) :: n
-!      real,             intent(in   ) :: zlevs(n)
-!      integer,          intent(  out) :: NObs
-!
-!
-!      type(acc), pointer :: d => null()
-!
-!
-!      !
-!      ! Release array2d if allocated
-!      !
-!
-!      if(allocated(Array2D)) deallocate(Array2D)
-!
-!      !
-!      ! Find File Number
-!      !
-!
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!
-!      if(.not.associated(d)) then
-!         print*, 'No file open ... ', FNumber
-!         return
-!      endif
-!
-!      Array2D = d%conv%GetObsInfo(oName, oType, zlevs)
-!      nObs    = size(Array2D,1)
-!  
-!   end subroutine
-!   
-!   subroutine GetObsRad(FNumber, Sensor, SatId, NObs)
-!      integer,          intent(in   ) :: FNumber
-!      character(len=*), intent(in   ) :: Sensor
-!      character(len=*), intent(in   ) :: SatId
-!      integer,          intent(  out) :: NObs
-!
-!      type(acc), pointer :: d => null()
-!      integer :: ierr
-!      
-!      !
-!      ! Release array2d if allocated
-!      !
-!
-!      if(allocated(Array2D)) deallocate(Array2D)
-!
-!      !
-!      ! Find File Number
-!      !
-!      d => diagFile%root
-!      do while(associated(d))
-!         if(FNumber.eq.d%FNumber) exit
-!         d => d%next
-!      enddo
-!
-!      if(.not.associated(d)) then
-!         print*, 'No file open ... ', FNumber
-!         return
-!      endif
-!      
-!      call d%rad%GetObsInfo(Sensor, SatId, Array2D, ierr)
-!      if(ierr .ne. 0)then
-!         nObs = -1
-!         write(*,*)'Error to get Sensor:', trim(Sensor), ' or SatPlat:', trim(SatId)
-!         return
-!      else
-!         nObs = size(Array2D,1)
-!      endif
-!      return
-!
-!
-!   end subroutine
-!
-!   function getFileType(FNumber)result(fileType) 
-!      integer             :: FNumber
-!      integer             :: fileType
-!
-!      type(acc), pointer :: f => null()
-!
-!      f => diagFile%root
-!      do while(associated(f))
-!         if (f%FNumber .eq. FNumber)then
-!            fileType = f%fileType
-!            return
-!         endif
-!         f => f%next
-!      enddo
-!      write(*,*)'error: File number does not exist:', FNumber
-!      fileType = -1
-!   end function
+      real, parameter           :: ps  = 1000.0
+      real(DOuble), allocatable :: ak(:), bk(:)
+      integer                   :: i
+      type(acc),        pointer :: d => null()
+      
+      d => accessFile%root
+      do while(associated(d))
+         if(FNumber.eq.d%FNumber) exit
+         d => d%next
+      enddo
 
+      nLevels = d%bam%getOneDim('kmax')
+      allocate(array1d(nLevels))
+
+      if (d%bam%isHybrid)then
+         allocate(ak(nLevels+1))
+         allocate(bk(nLevels+1))
+
+         call d%bam%getVerticalCoord('ak',ak)
+         call d%bam%getVerticalCoord('bk',bk)
+ 
+         do i=1,nLevels
+            array1d(i) = (ak(i)/100.0) + bk(i)*ps
+         enddo
+
+      else
+ 
+         call d%bam%getVerticalCoord('sl',bk)
+         do i=1,nLevels
+            array1d(i) =  bk(i)*ps
+         enddo
+
+      endif
+
+   end function
+
+   function getNVars(FNumber) result(nVars)
+      integer, intent(in) :: FNumber
+      integer             :: nVars
+
+      type(acc),        pointer :: d => null()
+
+      
+      d => accessFile%root
+      do while(associated(d))
+         if(FNumber.eq.d%FNumber) exit
+         d => d%next
+      enddo
+
+      nVars = d%bam%fcount
+
+      return
+     
+   end function
+
+   subroutine getVarNames(FNumber, nVars, varNames)
+      integer, intent(in) :: FNumber
+      integer, intent(in) :: nVars
+      character*45, dimension(nVars), intent(out) :: varNames
+
+      type(acc),        pointer :: d => null()
+      character(len=45), allocatable :: vTable(:)
+
+      integer :: i
+      
+      d => accessFile%root
+      do while(associated(d))
+         if(FNumber.eq.d%FNumber) exit
+         d => d%next
+      enddo
+
+      allocate(vTable(nVars))
+      call  d%bam%getVarNames(vTable)
+
+      do i=1,nVars
+         varNames(i) = vTable(i)
+      enddo
+!      nVars = d%bam%fcount
+!      allocate(charArray1D(nVars))
+!      call  d%bam%getVarNames(charArray1D)
+!      print*,nVars
+!      do i =1, nVars
+!         print*,i, charArray1D(i)
+!      enddo
+!
+
+   end subroutine
+   
 end module
