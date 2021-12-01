@@ -55,6 +55,12 @@ python module pythonBAM ! in
                 integer               :: nVars
             end subroutine getnvars
 
+            function readField(FNumber, fieldName, level) result(iret) ! in :pythonbam:pythonbam.f90:pythonbam
+               integer,          intent(in) :: FNumber
+               character(len=*), intent(in) :: fieldName
+               integer,          intent(in) :: level
+               integer :: iret
+            end function readField
 
             subroutine getVarNames(FNumber, nVars, varNames) ! in :pythonbam:pythonbam.f90:pythonbam
                 integer, intent(in) :: FNumber
@@ -62,6 +68,11 @@ python module pythonBAM ! in
                 character*45, intent(out) :: varNames(nVars)
             end subroutine getVarNames
 
+            function spec2grid(FNumber, spec) result(iret)  ! in :pythonbam:pythonbam.f90:pythonbam
+               integer, intent(in) :: FNumber
+               real,    intent(in) :: spec(:)
+               integer :: iret
+            end function spec2grid
         end module pythonbam
     end interface 
 end python module pythonBAM

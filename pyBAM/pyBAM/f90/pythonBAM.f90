@@ -13,7 +13,9 @@ module pythonBAM
    Public :: getVerticalLevels
    Public :: getNVars
    public :: getVarNames
-
+   public :: readField
+   public :: spec2grid
+   
    character(len=*),parameter :: myname = 'pythonBAM'
 
    Real, Public, Allocatable :: Array1D(    :)
@@ -244,6 +246,8 @@ module pythonBAM
 
       if (iret .ne. 0)then
          deallocate(Array2D)
+      else
+         print*,level, minval(Array2D),maxval(Array2D)
       endif
       
       return
@@ -268,7 +272,6 @@ module pythonBAM
       return
 
    end function
-
 
    function getVerticalLevels(FNumber)result(nLevels)
       integer, intent(in) :: FNumber
@@ -308,6 +311,34 @@ module pythonBAM
 
       endif
 
+   end function
+
+   function readField(FNumber, fieldName, level) result(iret)
+      integer,          intent(in) :: FNumber
+      character(len=*), intent(in) :: fieldName
+      integer,          intent(in) :: level
+      integer :: iret
+
+      integer :: fldSize
+
+      type(acc), pointer :: d => null()
+
+      iret = 0
+      
+      d => accessFile%root
+      do while(associated(d))
+         if(FNumber.eq.d%FNumber) exit
+         d => d%next
+      enddo
+
+      fldSize = d%bam%getOFS(fieldName)
+      allocate(Array1D(fldSize))
+      call d%bam%getOField(fieldName, level, Array1D, istat=iret)
+      if (iret .ne. 0)then
+         deallocate(Array1D)
+      endif
+      
+      return   
    end function
 
    function getNVars(FNumber) result(nVars)
@@ -361,5 +392,51 @@ module pythonBAM
 !
 
    end subroutine
+
+   function spec2grid(FNumber, spec) result(iret)
+      integer, intent(in) :: FNumber
+      real,    intent(in) :: spec(:)
+      integer :: iret
+
+      real(Double), allocatable :: spec8(:)
+      real(Double), allocatable :: grid8(:)
+      integer :: imax
+      integer :: jmax
+      integer :: i, j, k
+      type(acc), pointer :: d => null()
+
+      d => accessFile%root
+      do while(associated(d))
+         if(FNumber.eq.d%FNumber) exit
+         d => d%next
+      enddo
+
+      allocate(spec8(size(spec)))
+      spec8 = real(spec,Double)
+
+      imax = d%bam%getOneDim('imax')
+      jmax = d%bam%getOneDim('jmax')
+      
+      allocate(grid8(imax*jmax))
+      call d%bam%Spec2Grid(spec8,grid8)
+
+      deallocate(spec8)
+      allocate(Array2D(imax,jmax))
+
+      k = 1
+      do j=1,jMax
+         do i=1,iMax
+            array2D(i,j) = real(grid8(k),4)
+            k = k + 1
+         enddo
+      enddo
+
+      deallocate(grid8)
+      
+      iret = 0
+
+      return
+
+   end function
    
 end module
