@@ -24,11 +24,14 @@
 This module defines the majority of pyBAM functions, including all plot types
 """
 from pythonBAM import pythonbam as pBAM
+import concurrent.futures
 import numpy as np
 import xarray as xr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import asyncio
+
 #
 # 
 import cartopy.crs as ccrs
@@ -240,6 +243,24 @@ class openBAM(object):
 
         return iret
 
+    def gOField(self, fieldName, zlevel=None):
+
+        if zlevel is None:
+            zlevel = 1
+
+        iret = pBAM.readField(self.FNumber, fieldName, zlevel)
+        if (iret == 0):
+           array = pBAM.array1d.transpose().copy()
+           pBAM.array1d = None
+           return array
+        else:
+           return iret
+
+    def spec2grid(self, spec):
+        iret = pBAM.spec2grid(self.FNumber, spec)
+        data = pBAM.array2d.transpose().copy()
+        pBAM.array2d = None
+        return data
 
     def getField(self, fieldName, zlevel=None):
 
@@ -248,17 +269,15 @@ class openBAM(object):
 
         iret = pBAM.getField(self.FNumber, fieldName, zlevel)
         if (iret == 0):
-            da = xr.DataArray(data   = pBAM.array2d.transpose().copy(),
+            da = xr.DataArray(data   = array,
                               name   = fieldName,
                               dims   = ['lat','lon'],
                               coords = {'lat': self.lats[::-1],
                                         'lon': self.lons})
-            pBAM.array2d = None
-
             return da
         else:
             print('Error to get field',fieldName,iret)
-            return iret
+
             
     def getField3D(self, fieldName, zlevels=None):
 
@@ -269,14 +288,51 @@ class openBAM(object):
            nlevs  = len(zlevels)
            levels = self.levels[[z-1 for z in zlevels]]
 
-        print('Will get ',nlevs,'zlevels from ', fieldName)
+        print('Will get ', nlevs, ' from ', fieldName)
         print('This operation will take a while ...')
-        da = {}
-        for k, level in enumerate(tqdm(levels)):
-            da[k] = self.getField(fieldName,k+1)
-            da[k] = da[k].assign_coords(zlev=level)
 
-        da = xr.concat([da[i] for i in da],dim='zlev')
+        #
+        # define DataArray
+        #
+        da = xr.DataArray(name   = fieldName,
+                          dims   = ['lev','lat','lon'],
+                          coords = {'lev':self.levels,
+                                    'lat':self.lats[::-1],
+                                    'lon':self.lons
+                                   }
+                         )
+        
+        # get spectral data
+        data = {}
+        for k in range(1,nlevs+1):
+            data[k] = self.gOField(fieldName, k)
+        
+# aqui preciso fazer um check para ver se precisa converter ou não
+
+        # if is a spectral field, transform to grid
+
+        # get number of cores
+        #try:
+        #    workers = cpu_count()
+        #except NotImplementedError:
+        #    workers = 1
+
+        # spread each level to each cpu
+        with tqdm(total=nlevs) as pbar: # this is for Progress bar
+           #with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+           with concurrent.futures.ProcessPoolExecutor() as executor:
+               futures = {executor.submit(self.spec2grid, data[k]): k for k in range(1,nlevs+1)}
+               # get results
+               results = {}
+               for future in concurrent.futures.as_completed(futures):
+                   arg = futures[future]
+                   results[arg] = future.result()
+                   pbar.update(1) # progress bar
+
+
+        # put results inside DataArray
+        for k in results.keys():
+            da[k-1,:,:] = results[k]
 
         return da
 
