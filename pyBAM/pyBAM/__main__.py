@@ -43,24 +43,54 @@ def help():
 def inter_from_256(x):
     return np.interp(x=x,xp=[0,255],fp=[0,1])
 
+
+def split( strg, substr, maxsplit=None, backfind=False):
+
+    idx = [i for i, s in enumerate(strg) if s == substr]
+
+    if maxsplit == None:
+        maxsplit = len(idx)+1
+        
+    if backfind:
+       out = []
+       f   = len(strg)
+       for c,i in enumerate(idx[::-1]):
+           if c+1 >=maxsplit:
+               break
+           out.append(strg[i+1:f])
+           f = i
+       out.append(strg[0:f])
+       return out[::-1]
+    else:
+       out = []
+       i   = 0
+       for c,f in enumerate(idx):
+           if c+1 >=maxsplit:
+               break
+           out.append(strg[i:f])
+           i=f+1
+       out.append(strg[i:len(strg)])
+       return out
+
+
 def GrADSColors():
     
-   rgb = np.array(
-         [[160,   0, 200],
-          [110,   0, 220],
-          [ 30,  60, 255],
-          [  0, 160, 255],
-          [  0, 200, 200],
-          [  0, 210, 140],
-          [  0, 220,   0],
-          [160, 230,  50],
-          [230, 220,  50],
-          [230, 175,  45],
-          [240, 130,  40],
-          [250,  60,  60],
-          [240,   0, 130]]) / 255
+    rgb = np.array(
+          [[160,   0, 200],
+           [110,   0, 220],
+           [ 30,  60, 255],
+           [  0, 160, 255],
+           [  0, 200, 200],
+           [  0, 210, 140],
+           [  0, 220,   0],
+           [160, 230,  50],
+           [230, 220,  50],
+           [230, 175,  45],
+           [240, 130,  40],
+           [250,  60,  60],
+           [240,   0, 130]]) / 255
 
-   return mpl.colors.ListedColormap(rgb)
+    return mpl.colors.ListedColormap(rgb)
 
 
 def defineMap():
@@ -147,25 +177,28 @@ class openBAM(object):
         # parse open arguments
         #
 
+        # parse header
+        #prefix,htype,mres=header.split(".")
+        prefix,htype,mres=split(header, ".", maxsplit=3, backfind=True)
+        if (htype == 'dic'):
+            print("htype is", htype)
+            btype = 'icn'
+        elif (htype == 'din'):
+            print("htype is", htype)
+            btype = 'inz'
+        elif (htype == 'dir'):
+            print("htype is", htype)
+            btype = 'fct'
+        elif (htype == 'dun'):
+            print("htype is", htype)
+            btype = 'unf'
+        else:
+            print('ERROR: unknown file type ('+htype+'), abort ...')
+            return
+
+
         # verify binary file name
         if binary is None:
-            prefix,htype,mres=header.split(".")
-            if (htype == 'dic'):
-                print("htype is", htype)
-                btype = 'icn'
-            elif (htype == 'din'):
-                print("htype is", htype)
-                btype = 'inz'
-            elif (htype == 'dir'):
-                print("htype is", htype)
-                btype = 'fct'
-            elif (htype == 'dun'):
-                print("htype is", htype)
-                btype = 'unf'
-            else:
-                print('ERROR: file not open!')
-                print('ERROR: unknown file type, abort ...')
-                return
             self.binary = prefix+'.'+btype+'.'+mres
         else:
             self.binary = binary
@@ -267,8 +300,10 @@ class openBAM(object):
         if zlevel is None:
             zlevel = 1
 
-        iret = pBAM.getField(self.FNumber, fieldName, zlevel)
+        iret  = pBAM.getField(self.FNumber, fieldName, zlevel)
         if (iret == 0):
+            array = pBAM.array2d.transpose().copy()
+            pBAM.array2d = None
             da = xr.DataArray(data   = array,
                               name   = fieldName,
                               dims   = ['lat','lon'],
@@ -288,7 +323,7 @@ class openBAM(object):
            nlevs  = len(zlevels)
            levels = self.levels[[z-1 for z in zlevels]]
 
-        print('Will get ', nlevs, ' from ', fieldName)
+        print('Will get ', nlevs, ' zlevels from ', fieldName)
         print('This operation will take a while ...')
 
         #
