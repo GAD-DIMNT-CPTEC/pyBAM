@@ -169,7 +169,7 @@ class openBAM(object):
     read a diagnostic file from gsi. Return an array with
     some information.
     """
-
+    
     def __init__(self, header, binary=None, mode=None, ftype=None, initSpec=None):
 
         self.header  = header
@@ -275,7 +275,7 @@ class openBAM(object):
 
 
         return iret
-
+        
     def gOField(self, fieldName, zlevel=None):
 
         if zlevel is None:
