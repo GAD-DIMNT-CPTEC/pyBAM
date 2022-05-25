@@ -47,10 +47,10 @@ conda install matplotlib
 conda install -c conda-forge cartopy
 ```
 
-Se preferir, ao invés de instalar os pacotes individualmente, utilize o arquivo `pyBAM.yml`:
+Se preferir, ao invés de instalar os pacotes individualmente, utilize o arquivo `environment.yml`:
 
 ```bash
-conda env create -f pyBAM.yml
+conda env create -f environment.yml
 ```
 
 ### Instalação do pyBAM
