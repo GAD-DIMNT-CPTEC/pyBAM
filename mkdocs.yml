@@ -1,0 +1,68 @@
+# Project information
+site_name: pyBAM
+site_author: Grupo de Assimilação de Dados (GAD-DIMNT-CPTEC)
+site_description: Classe python para acessar arquivos espectrais produzidos pelo modelo global BAM (Brazilian global Atmospheric Model)
+
+# Repository
+repo_name: GAD-DIMNT-CPTEC/pyBAM
+repo_url: https://github.com/GAD-DIMNT-CPTEC/pyBAM
+edit_uri: edit/main/docs/  
+
+# Page tree
+nav:
+  - Instalação:
+    - sigioBAM: inst_sigioBAM.md
+    - pyBAM: inst_pyBAM.md
+  - Uso: uso.md
+
+#Configuration
+theme: 
+  name: material
+  language: pt-BR
+  palette:
+    primary: teal
+    accent: teal
+  features:
+    - content.tabs.link
+#    - navigation.instant
+#    - navigation.tracking
+#    - navigation.tabs
+    - navigation.tabs.sticky
+#    - navigation.sections
+#    - navigation.top
+#  name: readthedocs
+#  palette:
+#    scheme: slate
+
+extra:
+    social:
+      #- icon: fontawesome/brands/youtube
+      #  link: https://www.youtube.com/channel/UCYtOSAm2NlYArmPwUkg1kUw
+      - icon: fontawesome/brands/github
+        link: https://github.com/joaogerd
+      - icon: fontawesome/solid/paper-plane
+        link: mailto:joao.gerd@gmail.com
+
+# Extensions
+markdown_extensions:
+  - footnotes
+  - tables
+  - admonition
+  - abbr
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# Plugins
+plugins:
+  - mkdocs-video
+  - search
+#  - pdf-export
+#  - mkpdfs
