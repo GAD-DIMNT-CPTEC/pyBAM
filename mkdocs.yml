@@ -20,8 +20,8 @@ theme:
   name: material
   language: pt-BR
   palette:
-    primary: deep purple
-    accent: deep purple
+    primary: teal
+    accent: teal
   features:
     - content.tabs.link
 #    - navigation.instant
