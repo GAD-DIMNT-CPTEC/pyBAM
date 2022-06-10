@@ -25,7 +25,9 @@ Para obter e instalar o sigioBAM, siga os passos a seguir:
     ```bash linenums="1"
     cd sigioBAM 
     ./autogen.sh 
-    ./configure --prefix=/opt/sigioBAM make make install
+    ./configure --prefix=/opt/sigioBAM 
+    make 
+    make install
     ```
 
 **Obs.:** Caso não seja root do sistema, instale a biblioteca na pasta pessoal e prossiga para o próximo passo.
