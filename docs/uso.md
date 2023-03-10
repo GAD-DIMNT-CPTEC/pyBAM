@@ -7,13 +7,7 @@ O primeiro passo é carregar o pacote no ambiente Python. Uma vez que o ambiente
 === "Comando"
 
     ```bash linenums="1"
-    python
-
-    Python 3.7.6 (default, Jan  8 2020, 19:59:22) 
-    [GCC 7.3.0] :: Anaconda, Inc. on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>>
-    >>> import pyBAM as pb
+    import pyBAM as pb
     ```
 
 Para a visualização de figuras é necessário carregar o pacote matplotlib:
@@ -21,7 +15,7 @@ Para a visualização de figuras é necessário carregar o pacote matplotlib:
 === "Comando"
 
     ```bash linenums="1"
-    >>> import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
     ```
 
 O pacote pyBAM lida diretamente com os arquivos espectrais gerados pelo modelo BAM. As variáveis no espaço espectral são recompostas para o espaço físico (ponto de grade) e são organizadas em estruturas de dados em 2 ou 3 dimensões utilizando a biblioteca xarray do Python.
@@ -31,7 +25,7 @@ Para acessar um arquivo do BAM basta informar o arquivo header correspondente. P
 === "Comando"
 
     ```bash linenums="1"
-    >>> bFile = pb.openBAM('GFCTCPT20191115002019111500F.dic.TQ0299L064')
+    bFile = pb.openBAM('GFCTCPT20191115002019111500F.dic.TQ0299L064')
     ```
 
 Para plotar uma variável em um determinado nível é realizada a seguinte operação:
@@ -39,7 +33,7 @@ Para plotar uma variável em um determinado nível é realizada a seguinte opera
 === "Comando"
 
     ```python linenums="1"
-    >>> bFile.plotField('VIRTUAL TEMPERATURE', zlevel=1)
+    bFile.plotField('VIRTUAL TEMPERATURE', zlevel=1)
     ```
 
 **Obs.:** se a opção `zlevel` for omitida será plotado o primeiro nível da variável.
@@ -55,7 +49,7 @@ Como resultado teremos o seguinte mapa:
 === "Comando"
 
     ```python linenums="1"
-    >>> field = bFile.getField('VIRTUAL TEMPERATURE', zlevel=55)
+    field = bFile.getField('VIRTUAL TEMPERATURE', zlevel=55)
     ```
 
 Desta forma a variável `field` conterá um xarray com a temperatura virtual no nível 55:
@@ -63,8 +57,8 @@ Desta forma a variável `field` conterá um xarray com a temperatura virtual no 
 === "Comando"
 
     ```python linenums="1"
-    >>> field = bFile.getField('VIRTUAL TEMPERATURE', zlevel=55)
-    >>> print(field)
+    field = bFile.getField('VIRTUAL TEMPERATURE', zlevel=55)
+    print(field)
     ```
 
 === "Resultado"
@@ -95,16 +89,16 @@ Por outro lado, para obter campos 3D utiliza-se o método `getField3D`. Pelo fat
 === "Comando"
 
     ```python linenums="1"
-    >>> field3D = bFile.getField3D('VIRTUAL TEMPERATURE')
+    field3D = bFile.getField3D('VIRTUAL TEMPERATURE')
     VIRTUAL TEMPERATURE  has  64  zlevels
     This operation will take a while ...
     100%|===================================================|64/64 [01:48<00:00,  1.69s/it]
-    >>> print(field3D)
+    print(field3D)
     ```
 === "Resultado"
 
     ```python linenums="1"
-    <xarray.DataArray 'VIRTUAL TEMPERATURE' (zlev: 64, lat: 450, lon: 900)>
+    <xarray.DataArray 'VIRTUAL TEMPERATURE' (lev: 64, lat: 450, lon: 900)>
     array([[[252.69609, 252.69844, 252.70079, ..., 252.68913, 252.69144,
              252.69376],
             [252.21732, 252.22253, 252.22774, ..., 252.20169, 252.2069 ,
@@ -142,7 +136,7 @@ Por outro lado, para obter campos 3D utiliza-se o método `getField3D`. Pelo fat
     Coordinates:
       * lat      (lat) float32 89.69 89.3 88.9 88.5 ... -88.5 -88.9 -89.3 -89.69
       * lon      (lon) float32 0.0 0.4 0.8 1.2 1.6 ... 358.0 358.4 358.8 359.2 359.6
-      * zlev     (zlev) int64 1 2 3 4 5 6 7 8 9 10 ... 55 56 57 58 59 60 61 62 63 64
+      * lev      (lev) int64 1 2 3 4 5 6 7 8 9 10 ... 55 56 57 58 59 60 61 62 63 64
     ```
 
 Como as variáveis `field` e `field3D` são estruturas de dados do tipo xarray, elas carregam com si todas as funcionalidades do pacote XArray. Para plotar qualquer um dos níveis da variável `field3D` basta executar a seguinte instrução:
@@ -150,7 +144,7 @@ Como as variáveis `field` e `field3D` são estruturas de dados do tipo xarray, 
 === "Comando"
 
     ```python linenums="1"
-    >>> field3D.sel(zlev=2).plot()
+    field3D.isel(lev=2).plot()
     ```
 
 O que resulta na seguinte imagem:
@@ -164,12 +158,12 @@ O que resulta na seguinte imagem:
 === "Comando"
 
     ```python linenums="1"
-    >>> zonal_mean = field3D.mean(dim='lon')
-    >>> zonal_mean.plot.contourf(levels=13, yincrease=False, cmap='jet', extend='both')
-    >>> zonal_mean.plot.contour(levels=13, yincrease=False, colors='k')
-    >>> plt.yscale('log')
-    >>> plt.gca().yaxis.set_major_formatter(mpl.ticker.ScalarFormatter()
-    >>> plt.show()
+    zonal_mean = field3D.mean(dim='lon')
+    zonal_mean.plot.contourf(levels=13, yincrease=False, cmap='jet', extend='both')
+    zonal_mean.plot.contour(levels=13, yincrease=False, colors='k')
+    plt.yscale('log')
+    plt.gca().yaxis.set_major_formatter(mpl.ticker.ScalarFormatter()
+    plt.show()
     ```
 
 O que deve resultar na seguinte imagem:
