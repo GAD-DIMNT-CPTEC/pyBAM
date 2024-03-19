@@ -15,15 +15,20 @@ Para obter e instalar o sigioBAM, siga os passos a seguir:
 === "Comando"
 
     ```bash linenums="1"
-    svn export https://svn.cptec.inpe.br/slib/trunk/sharedLibs/sigioBAM
+    svn export https://svn.cptec.inpe.br/slib/tag/libsigiobam-1.1
     ```
 
 ### Compilação
 
+!!! warning "Atenção"
+
+    Certifique-se de utilizar a versão 11.4.0 do compilador GNU.
+
+
 === "Comando"
 
     ```bash linenums="1"
-    cd sigioBAM 
+    cd libsigiobam-1.1
     ./autogen.sh 
     ./configure --prefix=/opt/sigioBAM 
     make 
