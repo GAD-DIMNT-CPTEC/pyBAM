@@ -9,13 +9,13 @@ O pyBAM é uma interface projetada para acessar os arquivos espectrais (não pó
 * Obtenção do pacote:
 
 ```bash
-svn export https://svn.cptec.inpe.br/slib/trunk/sharedLibs/sigioBAM
+svn export https://svn.cptec.inpe.br/slib/tag/libsigiobam-1.1
 ```
 
 * Compilação:
 
 ```bash
-cd sigioBAM
+cd libsigiobam-1.1
 ./autogen.sh
 ./configure --prefix=/opt/sigioBAM
 make
