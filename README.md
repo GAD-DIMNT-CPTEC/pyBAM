@@ -22,6 +22,12 @@ make
 make install
 ```
 
+**Nota:** versões recomendadas do GCC para a compilação da biblioteca `libsigiobam-1.1`
+
+    * 11.5.0
+    * 12.4.0
+    * 13.3.0
+
 * Configuração:
 
 Adicione as seguintes linhas ao arquivo `$HOME/.bashrc`:
